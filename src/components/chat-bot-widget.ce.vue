@@ -78,7 +78,9 @@ const handleClientMessage = (text: string) => {
   } satisfies ChatMessage
   updateChatHistory(clientMessage)
   inputValue.value = ''
-  scrollToBottom()
+  setTimeout(() => {
+    scrollToBottom()
+  }, 0)
 }
 
 const isChatOpen = ref<boolean>(false)
@@ -98,9 +100,13 @@ const scrollToBottom = () => {
   bottomOfChat.value.scrollIntoView({ behavior: 'smooth' })
 }
 
+const inProgress = ref<boolean>(false)
+
 const handleTaskChoice = (command: string) => {
+  if (inProgress.value) return
   const task = props.botTasks.find((t) => t.text === command)
   if (task) {
+    inProgress.value = true
     task.action()
     const clientMessage = {
       type: 'client',
@@ -120,6 +126,7 @@ const handleTaskChoice = (command: string) => {
       }, 300)
       setTimeout(() => {
         scrollToBottom()
+        inProgress.value = false
       }, 300)
     }, 500)
   }
@@ -274,7 +281,7 @@ li {
 .chat-window.open {
   max-height: 400px;
   min-height: 400px;
-  padding: 0 4px 10px;
+  padding: 0 10px 10px;
 }
 
 .chat-messages {
