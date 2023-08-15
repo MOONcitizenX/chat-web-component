@@ -11,6 +11,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   }
+
   // build: {
   //   lib: {
   //     entry: './src/chat-widget.ts',
@@ -18,8 +19,9 @@ export default defineConfig({
   //     name: 'chat-widget',
   //     fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs')
   //   },
-  //   target: 'esnext',
-  //   minify: true,
-  //   sourcemap: true
+  //   minify: false
+  // },
+  // define: {
+  //   'process.env.NODE_ENV': JSON.stringify('production')
   // }
 })

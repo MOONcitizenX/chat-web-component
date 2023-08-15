@@ -28,7 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
   clientBgColor: '#e5e6c1',
   clientTextColor: '#1d161d',
   placeholder: 'Введите команду',
-  botTasks: [
+  botTasks: () => [
     {
       text: 'Заказать пиццу',
       response: 'Хорошо, я закажу пиццу. Что еще могу сделать?',
