@@ -5,7 +5,14 @@ register()
 </script>
 
 <template>
-  <chat-widget />
+  <main class="wrapper"><chat-widget /></main>
 </template>
 
-<style scoped></style>
+<style scoped>
+.wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+}
+</style>

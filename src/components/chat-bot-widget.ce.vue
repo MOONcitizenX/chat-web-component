@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted, type VNodeRef } from 'vue'
+import { reactive, ref, onMounted, type VNodeRef, watch } from 'vue'
 
 import ChatInputBox from './chat-input-box.vue'
 import ChatMessageBox from './chat-message-box.vue'
@@ -78,9 +78,6 @@ const handleClientMessage = (text: string) => {
   } satisfies ChatMessage
   updateChatHistory(clientMessage)
   inputValue.value = ''
-  setTimeout(() => {
-    scrollToBottom()
-  }, 0)
 }
 
 const isChatOpen = ref<boolean>(false)
@@ -97,7 +94,11 @@ const updateInputValue = (val: string) => {
 const bottomOfChat = ref<VNodeRef | null>(null)
 
 const scrollToBottom = () => {
-  bottomOfChat.value.scrollIntoView({ behavior: 'smooth' })
+  setTimeout(() => {
+    if (bottomOfChat.value) {
+      bottomOfChat.value.scrollIntoView({ behavior: 'smooth' })
+    }
+  })
 }
 
 const inProgress = ref<boolean>(false)
@@ -113,19 +114,16 @@ const handleTaskChoice = (command: string) => {
       text: command
     } satisfies ChatMessage
     updateChatHistory(clientMessage)
-    scrollToBottom()
     setTimeout(() => {
       const botResponse = {
         type: 'bot',
         text: task.response
       } satisfies ChatMessage
       updateChatHistory(botResponse)
-      scrollToBottom()
       setTimeout(() => {
         chatHistory.push(props.botTasks)
       }, 300)
       setTimeout(() => {
-        scrollToBottom()
         inProgress.value = false
       }, 300)
     }, 500)
@@ -135,69 +133,79 @@ const handleTaskChoice = (command: string) => {
 onMounted(() => {
   chatHistory.push(props.botTasks)
 })
+
+watch(chatHistory, scrollToBottom)
+
+watch(isChatOpen, scrollToBottom)
 </script>
 
 <template>
   <div class="chat-bot-wrapper">
-    <div class="chat-bot-container">
+    <button
+      v-if="!isChatOpen"
+      class="toggle-chat-button"
+      @click="toggleIsChatOpen"
+      :style="{ backgroundColor: botBgColor }"
+    >
+      <div class="chat-button__cross"></div>
+    </button>
+    <div v-else class="chat-bot-container">
       <div class="chat-header" :style="{ backgroundColor: botBgColor }">
         <h3 class="chat-header__text">{{ headerText }}</h3>
-        <span
-          class="chat-header__chevron"
+        <button
+          class="toggle-chat-button close"
           :class="{ open: isChatOpen }"
           @click="toggleIsChatOpen"
-          >&lt;</span
         >
+          <div class="chat-button__cross"></div>
+        </button>
       </div>
-      <transition name="open-chat">
-        <div
-          class="chat-window"
-          v-if="isChatOpen"
-          :class="{ open: isChatOpen }"
-          :style="{ border: `2px solid ${botBgColor}` }"
-        >
-          <transition name="messages">
-            <div class="chat-messages" v-if="isChatOpen">
-              <TransitionGroup name="messages">
-                <li
-                  v-for="(item, index) in chatHistory"
-                  :key="index"
-                  :class="{
-                    bot: !Array.isArray(item) && item.type === 'bot',
-                    client: !Array.isArray(item) && item.type === 'client'
-                  }"
-                >
-                  <ChatMessageBox
-                    v-if="!Array.isArray(item)"
-                    :text="item.text"
-                    :type="item.type"
-                    :bgColor="item.type === 'bot' ? botBgColor : clientBgColor"
-                    :textColor="
-                      item.type === 'bot' ? botTextColor : clientTextColor
-                    "
-                  />
-                  <ChatTasks
-                    v-else
-                    :botTasks="item"
-                    :bgColor="botBgColor"
-                    :textColor="botTextColor"
-                    @trigger-command="handleTaskChoice"
-                  />
-                </li>
-              </TransitionGroup>
-              <div class="bottom-of-chat" ref="bottomOfChat"></div>
-            </div>
-          </transition>
-          <ChatInputBox
-            :bgColor="botBgColor"
-            :textColor="botTextColor"
-            :inputValue="inputValue"
-            :placeholder="placeholder"
-            @send:command="handleClientMessage"
-            @update:input-value="updateInputValue"
-          />
-        </div>
-      </transition>
+      <div
+        class="chat-window"
+        v-if="isChatOpen"
+        :style="{ border: `2px solid ${botBgColor}` }"
+      >
+        <transition name="messages">
+          <div class="chat-messages">
+            <TransitionGroup name="messages">
+              <li
+                v-for="(item, index) in chatHistory"
+                :key="index"
+                :class="{
+                  bot: !Array.isArray(item) && item.type === 'bot',
+                  client: !Array.isArray(item) && item.type === 'client'
+                }"
+              >
+                <ChatMessageBox
+                  v-if="!Array.isArray(item)"
+                  :text="item.text"
+                  :type="item.type"
+                  :bgColor="item.type === 'bot' ? botBgColor : clientBgColor"
+                  :textColor="
+                    item.type === 'bot' ? botTextColor : clientTextColor
+                  "
+                />
+                <ChatTasks
+                  v-else
+                  :botTasks="item"
+                  :bgColor="botBgColor"
+                  :textColor="botTextColor"
+                  @trigger-command="handleTaskChoice"
+                />
+              </li>
+            </TransitionGroup>
+            <div class="bottom-of-chat" ref="bottomOfChat"></div>
+          </div>
+        </transition>
+        <ChatInputBox
+          :bgColor="botBgColor"
+          :textColor="botTextColor"
+          :inputValue="inputValue"
+          :placeholder="placeholder"
+          @send:command="handleClientMessage"
+          @update:input-value="updateInputValue"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -222,6 +230,62 @@ li {
   width: 100%;
   max-width: 600px;
   height: auto;
+
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.toggle-chat-button {
+  width: 50px;
+  height: 50px;
+  margin-left: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+
+  border: none;
+
+  position: relative;
+  transition: transform 0.4s ease;
+}
+
+.toggle-chat-button:hover {
+  transform: rotate(180deg);
+}
+
+.toggle-chat-button.close {
+  width: 30px;
+  height: 30px;
+  transform: rotate(45deg);
+}
+.toggle-chat-button.close:hover {
+  transform: rotate(235deg);
+}
+
+.chat-button__cross {
+  position: relative;
+  width: 50%;
+  height: 50%;
+}
+
+.chat-button__cross::before,
+.chat-button__cross::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 100%;
+  height: 2px;
+  background-color: #000;
+
+  transform: translate(-50%, -50%);
+}
+
+.chat-button__cross::after {
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 
 .chat-bot-container {
@@ -251,21 +315,12 @@ li {
 
   font-size: 1.5rem;
   font-weight: bold;
-
-  transform: rotate(-90deg);
-
-  transition: transform 0.2s ease-in-out;
   cursor: pointer;
-}
-
-.chat-header__chevron.open {
-  transform: rotate(90deg);
 }
 
 .chat-window {
   width: 100%;
-  max-height: 0;
-  min-height: 0;
+  height: 400px;
   padding: 0 4px;
   display: flex;
   flex-direction: column;
@@ -276,12 +331,6 @@ li {
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
   transition: transform 0.3s ease-in;
-}
-
-.chat-window.open {
-  max-height: 400px;
-  min-height: 400px;
-  padding: 0 10px 10px;
 }
 
 .chat-messages {
@@ -304,15 +353,6 @@ li {
 
 .chat-messages .client {
   align-self: flex-end;
-}
-
-.open-chat-enter-active,
-.open-chat-leave-active {
-  transition: all 0.5s ease;
-}
-.open-chat-enter-from,
-.open-chat-leave-to {
-  transform: translateY(-100%);
 }
 
 .messages-enter-active,
