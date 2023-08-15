@@ -18,7 +18,6 @@ interface Props {
   botTextColor?: string
   clientBgColor?: string
   clientTextColor?: string
-  botTasks?: BotTask[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,25 +26,26 @@ const props = withDefaults(defineProps<Props>(), {
   botBgColor: '#d978bd',
   botTextColor: '#1d161d',
   clientBgColor: '#e5e6c1',
-  clientTextColor: '#1d161d',
-  botTasks: () => [
-    {
-      text: 'Заказать пиццу',
-      response: 'Хорошо, я закажу пиццу. Что еще могу сделать?',
-      action: () => {}
-    },
-    {
-      text: 'Установить будильник',
-      response: 'Хорошо, я установлю будильник. Что еще могу сделать?',
-      action: () => {}
-    },
-    {
-      text: 'Вывести погоду',
-      response: 'Хорошо, я выведу погоду. Что еще могу сделать?',
-      action: () => {}
-    }
-  ]
+  clientTextColor: '#1d161d'
 })
+
+const botTasks: BotTask[] = [
+  {
+    text: 'Заказать пиццу',
+    response: 'Хорошо, я закажу пиццу. Что еще могу сделать?',
+    action: () => {}
+  },
+  {
+    text: 'Установить будильник',
+    response: 'Хорошо, я установлю будильник. Что еще могу сделать?',
+    action: () => {}
+  },
+  {
+    text: 'Вывести погоду',
+    response: 'Хорошо, я выведу погоду. Что еще могу сделать?',
+    action: () => {}
+  }
+]
 
 interface ChatMessage {
   type: 'bot' | 'client'
@@ -75,9 +75,7 @@ const updateChatHistory = (chatMessage: ChatMessage) => {
 }
 
 const handleClientMessage = (text: string) => {
-  const task = props.botTasks.find(
-    (t) => t.text.toLowerCase() === text.toLowerCase()
-  )
+  const task = botTasks.find((t) => t.text.toLowerCase() === text.toLowerCase())
   if (task) {
     handleTaskChoice(task.text)
     inputValue.value = ''
@@ -96,7 +94,7 @@ const handleClientMessage = (text: string) => {
     setTimeout(() => {
       updateChatHistory(botResponse)
       setTimeout(() => {
-        chatHistory.push(props.botTasks)
+        chatHistory.push(botTasks)
       }, 300)
     }, 500)
   }
@@ -127,7 +125,7 @@ const inProgress = ref<boolean>(false)
 
 const handleTaskChoice = (command: string) => {
   if (inProgress.value) return
-  const task = props.botTasks.find((t) => t.text === command)
+  const task = botTasks.find((t) => t.text === command)
   if (task) {
     inProgress.value = true
     task.action()
@@ -143,7 +141,7 @@ const handleTaskChoice = (command: string) => {
       } satisfies ChatMessage
       updateChatHistory(botResponse)
       setTimeout(() => {
-        chatHistory.push(props.botTasks)
+        chatHistory.push(botTasks)
       }, 300)
       setTimeout(() => {
         inProgress.value = false
@@ -153,7 +151,7 @@ const handleTaskChoice = (command: string) => {
 }
 
 onMounted(() => {
-  chatHistory.push(props.botTasks)
+  chatHistory.push(botTasks)
 })
 
 watch(chatHistory, scrollToBottom)

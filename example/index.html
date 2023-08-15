@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-weight: normal;
+      }
+      body {
+        position: relative;
+        height: 100%;
+        min-height: 100vh;
+        width: 100%;
+      }
+      #wrapper {
+        position: absolute;
+        bottom: 30px;
+        right: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <chat-widget
+        header-text="My chat bot"
+        bot-bg-color="#89C7E0"
+        bot-text-color="#33373D"
+        client-bg-color="#DAE9B0"
+        client-text-color="#12272A"
+        placeholder="My placeholder"
+      ></chat-widget>
+    </div>
+    <script type="module">
+      import { register } from './index.js'
+      register()
+    </script>
+  </body>
+</html>

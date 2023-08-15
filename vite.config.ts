@@ -10,18 +10,18 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  build: {
+    lib: {
+      entry: './src/chat-widget.ts',
+      formats: ['es', 'cjs'],
+      name: 'chat-widget',
+      fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs')
+    },
+    target: 'esnext',
+    minify: true
+  },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production')
   }
-
-  // build: {
-  //   lib: {
-  //     entry: './src/chat-widget.ts',
-  //     formats: ['es', 'cjs'],
-  //     name: 'chat-widget',
-  //     fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs')
-  //   },
-  //   minify: false
-  // },
-  // define: {
-  //   'process.env.NODE_ENV': JSON.stringify('production')
-  // }
 })
