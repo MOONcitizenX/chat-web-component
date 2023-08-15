@@ -1,46 +1,57 @@
-# chat-bot-widget
+# Тестовое задание чат-бот
 
-This template should help get you started developing with Vue 3 in Vite.
+### Ветки
 
-## Recommended IDE Setup
+- `main` - как выглядит без пропсов: [Deploy](https://default-no-props.netlify.app/)
+- `with-props`как выглядит с пропсами: [Deploy](https://with-props.netlify.app/)
+- `web-component` ветка для билда веб-компонента
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+### Как пользоваться веб-компонентом
 
-## Type Support for `.vue` Imports in TS
+##### Code
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+Данный код нужно вставить в `body` вашего html файла.
+В корневой папке приложения нужно положить `index.js` файл полученный из билда в ветке `web-component`
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+    <chat-widget></chat-widget>
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+    <script  type="module">
+        import { register } from  "./index.js";
+        register();
+    </script>
 
-## Customize configuration
+Функция `register` принимает аргументом `tag`. Дефолтное значение - `chat-widget`.
+Чтобы изменить тэг веб-компонента, зарегистрируйте его под другим именем и используйте это имя в качестве тэга. Рекомендуется использовать как минимум двусоставное имя во избежание конфликтов. Например `chat-bot-widget`.
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+##### Props
 
-## Project Setup
+Чат-бот-виджет принимает следующие пропсы:
 
-```sh
-npm install
-```
+    header-text:  string
+    // default = 'Чат'
 
-### Compile and Hot-Reload for Development
+    placeholder:  string\
+    // default = 'Введите команду'
 
-```sh
-npm run dev
-```
+    bot-bg-color:  string
+    // default = '#d978bd'
 
-### Type-Check, Compile and Minify for Production
+    bot-text-color:  string
+    // default = #1d161d'
 
-```sh
-npm run build
-```
+    client-bg-color:  string
+    // default = '#e5e6c1'
 
-### Lint with [ESLint](https://eslint.org/)
+    client-text-color:  string
+    // default = '#1d161d'
 
-```sh
-npm run lint
-```
+Пример использования пропсов:
+
+    <chat-widget
+        header-text="My chat bot"
+        bot-bg-color="#89C7E0"
+        bot-text-color="#33373D"
+        client-bg-color="#DAE9B0"
+        client-text-color="#12272A"
+        placeholder="My placeholder"
+    />
