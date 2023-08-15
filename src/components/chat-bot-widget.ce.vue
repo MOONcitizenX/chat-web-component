@@ -13,21 +13,21 @@ interface BotTask {
 
 interface Props {
   headerText?: string
+  placeholder?: string
   botBgColor?: string
   botTextColor?: string
   clientBgColor?: string
   clientTextColor?: string
-  placeholder?: string
   botTasks?: BotTask[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   headerText: 'Чат',
+  placeholder: 'Введите команду',
   botBgColor: '#d978bd',
   botTextColor: '#1d161d',
   clientBgColor: '#e5e6c1',
   clientTextColor: '#1d161d',
-  placeholder: 'Введите команду',
   botTasks: () => [
     {
       text: 'Заказать пиццу',
@@ -60,7 +60,18 @@ const chatHistory = reactive<(ChatMessage | BotTask[])[]>([
 ])
 
 const updateChatHistory = (chatMessage: ChatMessage) => {
-  chatHistory.push(chatMessage)
+  const multipleSentences = chatMessage.text.split('.')
+  if (multipleSentences.length > 1) {
+    multipleSentences.forEach((mes) => {
+      const singleSentence = {
+        type: chatMessage.type,
+        text: mes
+      }
+      chatHistory.push(singleSentence)
+    })
+  } else {
+    chatHistory.push(chatMessage)
+  }
 }
 
 const handleClientMessage = (text: string) => {
@@ -71,13 +82,24 @@ const handleClientMessage = (text: string) => {
     handleTaskChoice(task.text)
     inputValue.value = ''
     return
+  } else {
+    const clientMessage = {
+      type: 'client',
+      text
+    } satisfies ChatMessage
+    updateChatHistory(clientMessage)
+    inputValue.value = ''
+    const botResponse = {
+      type: 'bot',
+      text: 'Извините, такой задачи у меня нет. Чем могу помочь?'
+    } satisfies ChatMessage
+    setTimeout(() => {
+      updateChatHistory(botResponse)
+      setTimeout(() => {
+        chatHistory.push(props.botTasks)
+      }, 300)
+    }, 500)
   }
-  const clientMessage = {
-    type: 'client',
-    text
-  } satisfies ChatMessage
-  updateChatHistory(clientMessage)
-  inputValue.value = ''
 }
 
 const isChatOpen = ref<boolean>(false)
@@ -140,7 +162,12 @@ watch(isChatOpen, scrollToBottom)
 </script>
 
 <template>
-  <div class="chat-bot-wrapper">
+  <div
+    class="chat-bot-wrapper"
+    :class="{
+      open: isChatOpen
+    }"
+  >
     <button
       v-if="!isChatOpen"
       class="toggle-chat-button"
@@ -151,7 +178,9 @@ watch(isChatOpen, scrollToBottom)
     </button>
     <div v-else class="chat-bot-container">
       <div class="chat-header" :style="{ backgroundColor: botBgColor }">
-        <h3 class="chat-header__text">{{ headerText }}</h3>
+        <h3 class="chat-header__text" :style="{ color: botTextColor }">
+          {{ headerText }}
+        </h3>
         <button
           class="toggle-chat-button close"
           :class="{ open: isChatOpen }"
@@ -227,19 +256,17 @@ li {
 }
 .chat-bot-wrapper {
   padding: 10px;
-  width: 100%;
-  max-width: 600px;
+  width: fit-content;
   height: auto;
+}
 
-  position: absolute;
-  bottom: 0;
-  right: 0;
+.chat-bot-wrapper.open {
+  min-width: 400px;
 }
 
 .toggle-chat-button {
   width: 50px;
   height: 50px;
-  margin-left: auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -321,7 +348,7 @@ li {
 .chat-window {
   width: 100%;
   height: 400px;
-  padding: 0 4px;
+  padding: 10px 6px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -335,6 +362,7 @@ li {
 
 .chat-messages {
   padding-top: 10px;
+  padding-right: 17px;
   display: flex;
   flex-direction: column;
   gap: 10px;

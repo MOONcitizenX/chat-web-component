@@ -36,6 +36,7 @@ const sendCommand = () => {
       :placeholder="placeholder"
       :style="{
         border: `1px solid ${bgColor}`,
+        backgroundColor: bgColor,
         color: textColor
       }"
     />
